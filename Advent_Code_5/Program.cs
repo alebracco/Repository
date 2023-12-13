@@ -14,9 +14,7 @@ path = Path.Combine(Environment.CurrentDirectory, "adv_5_INPUT.txt");
 string[] values;
 string[] mappatura;
 Dictionary<string, List<string[]>> map = new Dictionary<string, List<string[]>>();
-List<string> list = new List<string>();
 string header = "";
-List<string> headers = new List<string>();
 Regex num = new(@"[0-9]");
 
 
@@ -65,29 +63,60 @@ using (FileStream fileStream = File.OpenRead(path))
 
 List<UInt32> location = new List<UInt32>();
 
+bool first = true;
+UInt32 initialSeed = 0;
+string seedLength;
+Dictionary<string, UInt32> seedAndLength = new Dictionary<string, UInt32>();
+
 foreach (var s in map["seeds"].First())
 {
-    UInt32 seed = Convert.ToUInt32(s);
-    foreach (string h in map.Keys.ToList().Skip(1))
+    if (first)
     {
-        foreach (var m in map[h].ToList())
-        {
-            var istruzioni = m;
-            UInt32 startDestination = Convert.ToUInt32(istruzioni[0]);
-            UInt32 startSource = Convert.ToUInt32(istruzioni[1]);
-            UInt32 length = Convert.ToUInt32(istruzioni[2]);
-            seed = ElaboraValori(startDestination, startSource, length, seed, out bool changed);
-            if (changed)
-                break;
-
-        }
-
-        if (h == map.Keys.Last())
-        {
-            location.Add(seed);
-        }
-        Console.WriteLine($"{h} - {seed}");
+        initialSeed = Convert.ToUInt32(s);
+        first = false;
     }
+    else
+    {
+        seedLength = s;
+        first = true;
+        seedAndLength.Add(seedLength, initialSeed);
+    }
+}
+
+var headers = map.Keys.ToList().Skip(1);
+
+foreach (var s in seedAndLength)
+{
+    UInt32 seed = s.Value;
+    UInt32 seedToOther = s.Value;
+    UInt32 len = Convert.ToUInt32(s.Key);
+    for (int i = 0; i < len; i++)
+    {
+        seed = seedToOther;
+        foreach (string h in headers)
+        {
+            foreach (var m in map[h].ToList())
+            {
+                var istruzioni = m;
+                UInt32 startDestination = Convert.ToUInt32(istruzioni[0]);
+                UInt32 startSource = Convert.ToUInt32(istruzioni[1]);
+                UInt32 length = Convert.ToUInt32(istruzioni[2]);
+                seed = ElaboraValori(startDestination, startSource, length, seed, out bool changed);
+                if (changed)
+                    break;
+            }
+
+            if (h == map.Keys.Last())
+            {
+                location.Add(seed);
+            }
+            Console.WriteLine($"{h} - {seed}");
+        }
+        seedToOther++;
+        Console.WriteLine();
+    }
+    Console.WriteLine();
+    Console.WriteLine("FINE SEME DI PARTENZA");
     Console.WriteLine();
 }
 
@@ -107,6 +136,11 @@ UInt32 ElaboraValori(UInt32 startDestination, UInt32 startSource, UInt32 length,
     changed = false;
     for (UInt32 i = 0; i < length; i++)
     {
+        if (startSource > seed || startSource + length < seed)
+        {
+            return seed;
+        }
+
         if (seed == startSource)
         {
             changed = true;
@@ -114,6 +148,7 @@ UInt32 ElaboraValori(UInt32 startDestination, UInt32 startSource, UInt32 length,
         }
         startDestination++;
         startSource++;
+        
     }
     return seed;
 }
