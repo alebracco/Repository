@@ -5,6 +5,7 @@
 //lowest location number
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -61,18 +62,18 @@ using (FileStream fileStream = File.OpenRead(path))
     }
 }
 
-List<UInt32> location = new List<UInt32>();
+List<Int64> location = new List<Int64>();
 
 bool first = true;
-UInt32 initialSeed = 0;
+Int64 initialSeed = 0;
 string seedLength;
-Dictionary<string, UInt32> seedAndLength = new Dictionary<string, UInt32>();
+Dictionary<string, Int64> seedAndLength = new Dictionary<string, Int64>();
 
 foreach (var s in map["seeds"].First())
 {
     if (first)
     {
-        initialSeed = Convert.ToUInt32(s);
+        initialSeed = Convert.ToInt64(s);
         first = false;
     }
     else
@@ -87,9 +88,9 @@ var headers = map.Keys.ToList().Skip(1);
 
 foreach (var s in seedAndLength)
 {
-    UInt32 seed = s.Value;
-    UInt32 seedToOther = s.Value;
-    UInt32 len = Convert.ToUInt32(s.Key);
+    Int64 seed = s.Value;
+    Int64 seedToOther = s.Value;
+    Int64 len = Convert.ToInt64(s.Key);
     for (int i = 0; i < len; i++)
     {
         seed = seedToOther;
@@ -98,29 +99,19 @@ foreach (var s in seedAndLength)
             foreach (var m in map[h].ToList())
             {
                 var istruzioni = m;
-                UInt32 startDestination = Convert.ToUInt32(istruzioni[0]);
-                UInt32 startSource = Convert.ToUInt32(istruzioni[1]);
-                UInt32 length = Convert.ToUInt32(istruzioni[2]);
+                Int64 startDestination = Convert.ToInt64(istruzioni[0]);
+                Int64 startSource = Convert.ToInt64(istruzioni[1]);
+                Int64 length = Convert.ToInt64(istruzioni[2]);
                 seed = ElaboraValori(startDestination, startSource, length, seed, out bool changed);
                 if (changed)
                     break;
             }
-
-            if (h == map.Keys.Last())
-            {
-                location.Add(seed);
-            }
-            Console.WriteLine($"{h} - {seed}");
         }
+        location.Add(seed);
         seedToOther++;
-        Console.WriteLine();
     }
-    Console.WriteLine();
-    Console.WriteLine("FINE SEME DI PARTENZA");
-    Console.WriteLine();
+    Console.WriteLine("Nextseed");
 }
-
-Console.WriteLine();
 
 foreach (var l in location)
 {
@@ -131,26 +122,21 @@ Console.WriteLine();
 
 Console.WriteLine($"The lowest: {location.Min()}");
 
-UInt32 ElaboraValori(UInt32 startDestination, UInt32 startSource, UInt32 length, UInt32 seed, out bool changed)
+Int64 ElaboraValori(Int64 startDestination, Int64 startSource, Int64 length, Int64 seed, out bool changed)
 {
     changed = false;
-    for (UInt32 i = 0; i < length; i++)
-    {
-        if (startSource > seed || startSource + length < seed)
-        {
-            return seed;
-        }
+    Int64 res = 0;
 
-        if (seed == startSource)
-        {
-            changed = true;
-            return startDestination;
-        }
-        startDestination++;
-        startSource++;
-        
+    if (startSource > seed || startSource + length < seed)
+    {
+        return seed;
     }
-    return seed;
+    else
+    {
+        changed = true;
+        res = seed - startSource;
+        return res + startDestination;
+    }
 }
 
 do
