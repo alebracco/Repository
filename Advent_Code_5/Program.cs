@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 string path = Path.Combine(Environment.CurrentDirectory, "adv_5_INPUT - Copia.txt");
-path = Path.Combine(Environment.CurrentDirectory, "adv_5_INPUT.txt");
+//path = Path.Combine(Environment.CurrentDirectory, "adv_5_INPUT.txt");
 
 string[] values;
 string[] mappatura;
@@ -86,32 +86,53 @@ foreach (var s in map["seeds"].First())
 
 var headers = map.Keys.ToList().Skip(1);
 
+List<Int64> lSeed = new List<Int64>();
+List<Int64> lSeedTOFinal = new List<Int64>();
+List<Int64> lSeedNeedModify = new List<Int64>();
+List<Int64> lSeedTOModify = new List<Int64>();
+
 foreach (var s in seedAndLength)
 {
-    Int64 seed = s.Value;
     Int64 seedToOther = s.Value;
     Int64 len = Convert.ToInt64(s.Key);
     for (int i = 0; i < len; i++)
     {
-        seed = seedToOther;
-        foreach (string h in headers)
-        {
-            foreach (var m in map[h].ToList())
-            {
-                var istruzioni = m;
-                Int64 startDestination = Convert.ToInt64(istruzioni[0]);
-                Int64 startSource = Convert.ToInt64(istruzioni[1]);
-                Int64 length = Convert.ToInt64(istruzioni[2]);
-                seed = ElaboraValori(startDestination, startSource, length, seed, out bool changed);
-                if (changed)
-                    break;
-            }
-        }
-        location.Add(seed);
+        lSeed.Add(seedToOther);
         seedToOther++;
     }
-    Console.WriteLine("Nextseed");
+
+    foreach (string h in headers)
+    {
+        lSeedTOModify.Clear();
+        foreach (var istruzioni in map[h].ToList())
+        {
+            lSeedNeedModify.Clear();
+            lSeedNeedModify = lSeed.Where(seed =>  Convert.ToInt64(istruzioni[1]) <= seed && Convert.ToInt64(istruzioni[1]) + Convert.ToInt64(istruzioni[2]) >= seed).ToList();
+            lSeed.RemoveAll(seed => lSeedNeedModify.Contains(seed));
+            lSeedTOModify.AddRange(lSeedNeedModify.Select(seed => seed + (Convert.ToInt64(istruzioni[0]) - Convert.ToInt64(istruzioni[1]))).ToList());
+        }
+        lSeed.AddRange(lSeedTOModify);
+    }
+    lSeedTOFinal.AddRange(lSeed);
 }
+location.AddRange(lSeedTOFinal);
+
+//foreach (var s in lSeed)
+//{
+//    Int64 seed = s;
+//    foreach (string h in headers)
+//    {
+//        foreach (var istruzioni in map[h].ToList())
+//        {
+//            seed = ElaboraValori(Convert.ToInt64(istruzioni[0]), Convert.ToInt64(istruzioni[1]), Convert.ToInt64(istruzioni[2]), seed, out bool changed);
+
+//            lSeed = lSeed.Where(x => x > Convert.ToInt64(istruzioni[1]) || Convert.ToInt64(istruzioni[0]) + Convert.ToInt64(istruzioni[2]) < x).Select(x => x + (Convert.ToInt64(istruzioni[1]) - Convert.ToInt64(istruzioni[0]))).ToList();
+//            if (changed)
+//                break;
+//        }
+//    }
+//    location.Add(seed);
+//}
 
 foreach (var l in location)
 {
