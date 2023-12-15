@@ -1,9 +1,14 @@
 ﻿
+using System.Numerics;
+
 string path = Path.Combine(Environment.CurrentDirectory, "adv_6_INPUT - Copia.txt");
 path = Path.Combine(Environment.CurrentDirectory, "adv_6_INPUT.txt");
 
 string[] time = new string[50];
+string bigRaceTime = "";
 string[] distance = new string[50];
+string bigRacedistance = "";
+
 
 using (FileStream fileStream = File.OpenRead(path))
 {
@@ -16,46 +21,38 @@ using (FileStream fileStream = File.OpenRead(path))
             if (line.Contains("Time"))
             {
                 time = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                foreach (var t in time.Skip(1))
+                {
+                    bigRaceTime += t;
+                }
             }
             else
             {
                 distance = line.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                foreach (var d in distance.Skip(1))
+                {
+                    bigRacedistance += d;
+                }
             }
 
         } while (!fileReader.EndOfStream);
     }
 }
 
-Dictionary<string, int> TimeDistance = new Dictionary<string, int>();
 List<int> lWin = new List<int>();
 
-for (int i = 1; i < time.Length; i++)
+
+Int64 cont = 0;
+for (Int64 j = 0; j < Convert.ToInt64(bigRaceTime); j++)
 {
-    TimeDistance.Add(time[i], Convert.ToInt16(distance[i]));
-    foreach (var td in TimeDistance)
+    Int64 speedPerSecond = j;
+    Int64 remainTime = Convert.ToInt64(bigRaceTime) - j;
+    Int64 distantReached = remainTime * speedPerSecond;
+    if (distantReached > Convert.ToInt64(bigRacedistance))
     {
-        int cont = 0;
-        for (int j = 0; j < td.Value; j++)
-        {
-            int speedPerSecond = j;
-            int remainTime = Convert.ToInt16(td.Key) - j;
-            int distantReached = remainTime * speedPerSecond;
-            if (distantReached > td.Value)
-            {
-                cont++;
-            }
-        }
-        lWin.Add(cont);
+        cont++;
     }
-    TimeDistance.Remove(time[i]);
-
 }
 
-int total = 1;
-foreach (var w in lWin)
-{
-    total *= w;
-}
-
-Console.WriteLine(total);
+Console.WriteLine(cont);
     
