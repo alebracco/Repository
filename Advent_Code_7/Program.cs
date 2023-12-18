@@ -39,16 +39,6 @@ foreach (Hand hand in game)
 
 Console.WriteLine($"{total}");
 
-//game = game.OrderBy(x => x.strength).ToList();
-
-//foreach (var item in game.DistinctBy(x => x.strength))
-//{
-
-//    Console.WriteLine("C");
-
-//}
-
-
 public class Hand
 {
 
@@ -78,48 +68,48 @@ public class Hand
         if (points.Count() == 1)
         {
             //Tutte carte uguali
-            combo = Strength.seven;
+            combo = Strength.AllEqual;
             return combo;
         }
         else if (points.Values.Contains(4) && points.Values.Contains(1))
         {
             //POKER
-            combo = Strength.six;
+            combo = Strength.Poker;
 
             return combo;
         }
         else if (points.Values.Contains(3) && points.Values.Contains(2))
         {
             //FULL
-            combo = Strength.five;
+            combo = Strength.Full;
 
             return combo;
         }
         else if (points.Values.Contains(3) && points.Values.Contains(1))
         {
             //TRIS
-            combo = Strength.four;
+            combo = Strength.Tris;
 
             return combo;
         }
         else if (points.Values.Contains(2) && points.Values.Contains(1) && points.Count == 3)
         {
             //DOPPIA COPPIA
-            combo = Strength.three;
+            combo = Strength.DoublePair;
 
             return combo;
         }
         else if (points.Values.Count() == 4)
         {
             //COPPIA
-            combo = Strength.two;
+            combo = Strength.Pair;
 
             return combo;
         }
         else if (points.Values.Count() == 5)
         {
             //TUTTE DIVERSE
-            combo = Strength.one;
+            combo = Strength.AllDifferent;
              
             return combo;
         }
@@ -163,42 +153,35 @@ public class Hand
     public static Dictionary<char,int> SameChar(string card)
     {
         Dictionary<char, int> charCount = new Dictionary<char, int>();
+        char charMax;
         foreach (var item in card.Distinct())
         {
             charCount.Add(item, card.Where(x => x == item).Count());
         }
+        if (charCount.ContainsKey('J') && charCount.Count != 1)
+        {
+            charMax = charCount.Where(x => x.Key != 'J').MaxBy(x => x.Value).Key;
+            charCount[charMax] += charCount['J'];
+            charCount.Remove('J');
+        }
         return charCount;
     }
 
-    public static bool CompareCards(char[] cards, char[] cards2)
-    {
-        for (int i = 0; i < cards.Length; i++)
-        {
-            if (ConvertToValue(cards[i]) > ConvertToValue(cards2[i]))
-            {
-                return true;
-            }
-            else if (ConvertToValue(cards[i]) < ConvertToValue(cards2[i]))
-            {
-                return false;
-            } 
-        }
-        return false;
-    }
     public enum Strength
     {
-        one = 1,
-        two = 2,
-        three = 3,
-        four = 4,
-        five = 5,
-        six = 6,
-        seven = 7,
+        AllDifferent = 1,
+        Pair = 2,
+        DoublePair = 3,
+        Tris = 4,
+        Full = 5,
+        Poker = 6,
+        AllEqual = 7,
     }
 
     public enum Value
     {
         _ = 0,
+        J = 1,
         due = 2,
         tre = 3,
         quattro = 4,
@@ -208,10 +191,9 @@ public class Hand
         otto = 8,
         nove = 9,
         T = 10,
-        J = 11,
-        Q = 12,
-        k = 13,
-        A = 14,
+        Q = 11,
+        k = 12,
+        A = 13,
     }
 }
 
