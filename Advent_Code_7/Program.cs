@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using static Hand;
 
 string path = Path.Combine(Environment.CurrentDirectory, "adv_7_INPUT - Copia.txt");
-//path = Path.Combine(Environment.CurrentDirectory, "adv_7_INPUT.txt");
+path = Path.Combine(Environment.CurrentDirectory, "adv_7_INPUT.txt");
 
 List<Hand> game = new List<Hand>();
 
@@ -21,36 +21,23 @@ using (FileStream fl = File.OpenRead(path))
         } while (!fileReader.EndOfStream);
     }
 }
-game.OrderBy(x => x.combo.strength.Value);
-List<Hand> finalGame = new List<Hand>();
+game = game.OrderBy(x => x.strength).ThenBy(x => x.cards[0]).ThenBy(x => x.cards[1]).ThenBy(x => x.cards[2]).ThenBy(x => x.cards[3]).ThenBy(x => x.cards[4]).ToList();
 
-
-foreach (var item in game)
+int cont = 1;
+foreach (Hand hand in game)
 {
-    if (finalGame.Count() == 0)
-    {
-        finalGame.Add(item);
-        continue;
-    }
-
-    if (item.combo.strength > item2.combo.strength)
-    {
-        finalGame.Insert(finalGame.IndexOf(item2), item);
-    }
-    else if (item.combo.strength == item2.combo.strength)
-    {
-        if (CompareCards(item.cards, item2.cards))
-        {
-            finalGame.Insert(finalGame.IndexOf(item2), item);
-        }
-        else
-        {
-            finalGame.Insert(finalGame.IndexOf(item2) + 1, item);
-        }
-            
-    }
-    
+    hand.rank = cont;
+    Console.WriteLine($"Mano: {hand.descrCards}, Money:{hand.money}, Valore alto: {hand.strength}, Rank: {hand.rank}");
+    cont++;
 }
+
+int total = 0;
+foreach (Hand hand in game)
+{
+    total += hand.rank * hand.money;
+}
+
+Console.WriteLine($"{total}");
 
 //game = game.OrderBy(x => x.strength).ToList();
 
@@ -64,89 +51,75 @@ foreach (var item in game)
 
 public class Hand
 {
+
+
     public Hand(string _cards, string _money, int nCard)
     {
-        this.cards = _cards.ToArray();
+        int cont = 0;
+        foreach (var c in _cards)
+        {
+            this.cards[cont] = ConvertToValue(c);
+            cont++;
+        }
         this.money = Convert.ToInt32(_money);
-        this.combo = WorthStrength(_cards);
-        this.nCard = nCard;
+        this.strength = WorthStrength(_cards);
+        this.descrCards = _cards;
     }
-
-    public class StrengthValue
-    {
-        public Strength? strength { get; set; }
-        public Value? value { get; set; }
-    }
-    public char[] cards { get; set; }
+    public Value[] cards = new Value[5];
+    public Strength strength { get; set; }
     public int money { get; set; }
     public int rank { get; set; }
-    public int nCard { get; set; }
-    public StrengthValue combo { get; set; }
+    public string descrCards { get; set; }
 
-    private StrengthValue WorthStrength(string cards)
+    private Strength WorthStrength(string cards)
     {
         var points = SameChar(cards);
-        StrengthValue combo = new StrengthValue();
+        Strength combo = new Strength();
         if (points.Count() == 1)
         {
             //Tutte carte uguali
-            combo.strength = Strength.seven;
-            combo.value = ConvertToValue(cards[0]);
-
+            combo = Strength.seven;
             return combo;
         }
         else if (points.Values.Contains(4) && points.Values.Contains(1))
         {
             //POKER
-            combo.strength = Strength.six;
-            combo.value = ConvertToValue(points.Where(x => x.Value == 4).First().Key);
+            combo = Strength.six;
 
             return combo;
         }
         else if (points.Values.Contains(3) && points.Values.Contains(2))
         {
             //FULL
-            combo.strength = Strength.five;
-            combo.value = ConvertToValue(points.Where(x => x.Value == 3).First().Key);
+            combo = Strength.five;
 
             return combo;
         }
         else if (points.Values.Contains(3) && points.Values.Contains(1))
         {
             //TRIS
-            combo.strength = Strength.four;
-            combo.value = ConvertToValue(points.Where(x => x.Value == 3).First().Key);
+            combo = Strength.four;
 
             return combo;
         }
         else if (points.Values.Contains(2) && points.Values.Contains(1) && points.Count == 3)
         {
             //DOPPIA COPPIA
-            combo.strength = Strength.three;
-            combo.value = ConvertToValue(points.Where(x => x.Value == 2).First().Key);
+            combo = Strength.three;
 
             return combo;
         }
         else if (points.Values.Count() == 4)
         {
             //COPPIA
-            combo.strength = Strength.two;
-            combo.value = ConvertToValue(points.Where(x => x.Value == 2).First().Key);
+            combo = Strength.two;
 
             return combo;
         }
         else if (points.Values.Count() == 5)
         {
             //TUTTE DIVERSE
-            combo.strength = Strength.one;
-            Dictionary<Value, int> boh = new();
-            foreach (var item in points)
-            {
-                var c = ConvertToValue(item.Key);
-                boh.Add(c, value: item.Value);
-                boh.OrderBy(x => x.Key);
-            }
-            combo.value = ConvertToValue(points.OrderBy(x => x.Key).First().Key);
+            combo = Strength.one;
              
             return combo;
         }
