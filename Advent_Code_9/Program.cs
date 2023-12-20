@@ -18,6 +18,8 @@ using (FileStream fl = File.OpenRead(path))
 }
 
 List<int[]> map = new List<int[]>();
+int? totalSum = 0;
+int? leftover = 0;
 
 foreach (var line in lLine)
 {
@@ -38,15 +40,26 @@ foreach (var line in lLine)
 
         map.Add(supportChar.ToArray());
     } while (supportChar.Distinct().First() != 0 || supportChar.Distinct().Count() != 1);
-}
 
-int totalSum = 0;
-//map.Reverse();
-foreach (var item in map)
-{
+    int reverse = 0;
+    int? firstValue = 0;
+    int? secondValue = null;
+    int? totalValue = 0;
 
-    totalSum += item.Last();
-    
+    do
+    {
+        if (secondValue is null)
+        {
+            secondValue  = map.ElementAt(map.Count() - ++reverse).First();
+        }
+        firstValue = map.ElementAt(map.Count() - ++reverse).First();
+
+        totalValue = firstValue - secondValue;
+        secondValue = totalValue;
+
+    } while (map.Count - leftover != reverse);
+    leftover += reverse;
+    totalSum += totalValue;
 }
 
 Console.WriteLine(totalSum);
