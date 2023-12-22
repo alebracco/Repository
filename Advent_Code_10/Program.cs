@@ -9,7 +9,7 @@
  */
 
 string path = Path.Combine(Environment.CurrentDirectory, "adv_10_INPUT - Copia.txt");
-path = Path.Combine(Environment.CurrentDirectory, "adv_10_INPUT.txt");
+//path = Path.Combine(Environment.CurrentDirectory, "adv_10_INPUT.txt");
 
 List<string> lLine = new List<string>();
 string[,] map;
@@ -28,11 +28,11 @@ using (FileStream fl = File.OpenRead(path))
             lLine.Add(fileReader.ReadLine());
             if (maxRow is null)
             {
-                maxRow = lLine.First().Length;
+                maxColumn = lLine.First().Length;
             }
 
         } while (!fileReader.EndOfStream);
-        maxColumn = lLine.Count();
+        maxRow = lLine.Count();
     }
 }
 
@@ -67,7 +67,7 @@ int x = startingPoint.x;
 int y = startingPoint.y;
 int _try = 0;
 
-Coordinata newDirection = WhatPipeIsStartingPoint(x, y, map);
+Coordinata newDirection = NextPipeFromStartingPoint(x, y, map);
 
 do
 {
@@ -76,9 +76,17 @@ do
 
 } while (map[newDirection.x, newDirection.y] != "S");
 
+//Totale dei pipes diviso 2
 Console.WriteLine((_try + 1) / 2);
 
-Coordinata WhatPipeIsStartingPoint(int x, int y, string[,] map)
+
+
+//Classi e metodi
+//Classi e metodi
+//Classi e metodi
+
+
+Coordinata NextPipeFromStartingPoint(int x, int y, string[,] map)
 {
     string pipe = "";
     Coordinata coord = new(0,0);
